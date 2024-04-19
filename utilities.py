@@ -1,5 +1,8 @@
 import pygame.font
+import pygame.color
+import pygame.rect
 import json
+from constants import Identity
 
 WHITE = (255,255,255)
 
@@ -54,7 +57,9 @@ def get_player_data_dict():
         "power": 0,
         "class_type": None,
         "experience": 0,
-        "level": 0
+        "level": 0,
+        "ref_x": 0,
+        "ref_y": 0
     }
 
 def get_map_data_dict():
@@ -70,17 +75,31 @@ def save_to(dict_func, save_func, file_path):
     save_file.close()
 
 def rect_loader(rect_save):
-        """ for loading the converted/ overridden string cast for rect.
-        
-        :param rect_save: list(left(float),top(float),width(float),height(float))
-        """
-        return pygame.rect.Rect(rect_save[0], rect_save[1], rect_save[2], rect_save[3])
+    """ for loading the converted/ overridden string cast for rect.
+    
+    :param rect_save: list(left(float),top(float),width(float),height(float))
+    """
+    return pygame.rect.Rect(rect_save[0], rect_save[1], rect_save[2], rect_save[3])
 
 def color_loader(color_save) -> pygame.color.Color:
-        """ for loading the converted/overriden string cast for color
-        
-        :param color_save: list(r(int), g(int), b(int))
-        """
-        if isinstance(color_save, str):
-             return pygame.color.Color(color_save)
-        return pygame.color.Color(color_save[0], color_save[1], color_save[2])
+    """ for loading the converted/overriden string cast for color
+    
+    :param color_save: list(r(int), g(int), b(int))
+    """
+    if isinstance(color_save, str):
+            return pygame.color.Color(color_save)
+    return pygame.color.Color(color_save[0], color_save[1], color_save[2])
+
+def color_to_list(color):
+    #TODO Docstring
+    if isinstance(color, pygame.color.Color):
+        return [color.r, color.g, color.b, color.a]
+    elif isinstance(color, str):
+        return color
+    return "cyan"
+
+def rect_to_list(rect):
+    #TODO: Docstring
+    if isinstance(rect, pygame.rect.Rect):
+        return [rect.left, rect.top, rect.w, rect.h]
+    return [0,0,0,0]

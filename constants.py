@@ -1,5 +1,5 @@
 import pygame
-
+import os
 
 class Identity(pygame.sprite.Sprite):
     """ This Sprite should belong to ONE group and one group only 
@@ -16,8 +16,9 @@ class Identity(pygame.sprite.Sprite):
 
 
 #Actual Consatants
-#TODO: Considet auto populating this to allow for saves between plays
-PTWD = "John_Caudill/"
+#TODO: Consider auto populating this to allow for saves between plays
+NAME = "Axys"
+PTWD = "/"
 WIDTH, HEIGHT = 1000,1000
 BUTTON_WIDTH, BUTTON_HEIGHT = WIDTH/5, HEIGHT/10
 PLAYER_WIDTH, PLAYER_HEIGHT = 20, 40
@@ -27,23 +28,27 @@ TILE_WIDTH, TILE_HEIGHT = 10, 10
 MAX_VEL = 5
 FPS = 60
 
-#Create all of the main groups
-red = pygame.sprite.Group()
-white = pygame.sprite.Group()
-blue = pygame.sprite.Group()
-green = pygame.sprite.Group()
-black = pygame.sprite.Group()
-yellow = pygame.sprite.Group()
 npc = pygame.sprite.Group()
 
-# Add Identity sprite to each of these gorups, 
-# Identity sprite will store the name of the group and other important data
-red.add(Identity("red", red))
-white.add(Identity("white", white))
-blue.add(Identity("blue", blue))
-green.add(Identity("green", green))
-black.add(Identity("black", black))
-yellow.add(Identity("yellow", yellow))
 npc.add(Identity("npc", npc))
 
 
+def get(variable):
+    return eval(variable, globals())
+
+
+def find_proper_wd(file_name):
+    for file in os.listdir(file_name):
+        print(file)
+        if file == NAME:
+            return os.path.join(file_name, file)
+        if os.path.isdir(file):
+            os.path.join(file_name, find_proper_wd(file))    
+    return ""
+
+def setup():
+    global PTWD
+    #setting up constants
+    PTWD = find_proper_wd(os.path.dirname(os.getcwd()))
+
+    pass

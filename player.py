@@ -17,6 +17,10 @@ class Player(pygame.sprite.Sprite):
     class_type: str
     #location stores the reletive position of the player within the game context as a tuple (x, y, z)
     location: tuple
+    ref_x: int
+    ref_y: int
+
+    
 
     def __init__(self, rect, *groups):
         self.rect = rect
@@ -30,12 +34,13 @@ class Player(pygame.sprite.Sprite):
         self.level = 0
         self.class_type = "none"
         self.tuple = (0, 0, 0)
+        self.ref_x = 0
+        self.ref_y = 0
 
     def load(self, save_dict):
         """
-        
-        TODO: add tryblocks to prevent save corruption
         """
+        #TODO: add tryblocks to prevent save corruption
         self.rect = utilities.rect_loader(save_dict["rect"])
         self.color = utilities.color_loader(save_dict["color"])
         self.on_screen = save_dict["on_screen"]
@@ -45,14 +50,16 @@ class Player(pygame.sprite.Sprite):
         self.power = save_dict["power"]
         self.experience = save_dict["experience"]
         self.level = save_dict["level"]
+        self.ref_x = save_dict["ref_x"]
+        self.ref_y = save_dict["ref_y"]
 
         
     def get(self, variable):
         # pygame.Rect, string cast does not play nice with json so this fixes it
         if (variable == "rect"):
-            return [self.rect.left, self.rect.top, self.rect.width, self.rect.height]
+            return utilities.rect_to_list(self.rect)
         if (variable == "color"):
-            return [self.color.r, self.color.g, self.color.b]
+            return utilities.color_to_list(self.color)
         return eval(variable, globals(), self.__dict__)
 
     def save(self, save_dict) -> dict:

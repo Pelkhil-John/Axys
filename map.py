@@ -4,10 +4,9 @@ import random
 import utilities
 import constants as c
 import biomes
-from constants import Identity
+import nation
 
 
-#TODO: add save functionallity
 #TODO: map change update handling
 #TODO: Biome coloring and non npc related Biomes
 
@@ -43,21 +42,16 @@ class Biome_tiles():
         self.biome_type = save_dict["biome_type"]
 
     def get_save_data(self) -> dict:
-        rect_list = [self.rect.x, self.rect.y, self.rect.w, self.rect.h]
-        if isinstance(self.color, tuple):
-            #color could be stored in two types, either a tuple of len 3 or 4
-            color_list = list(self.color)
-        else: 
-            # or as string, and we can't put tuples in .json files
-            color_list = self.color
         return{
             "index_i": self.index_i,
             "index_j": self.index_j,
-            "rect": rect_list,
-            "color": color_list,
+            "rect": utilities.rect_to_list(self.rect),
+            "color": utilities.color_to_list(self.color),
             "name": self.name,
             "biome_type": self.biome_type,
         }
+
+
 
 
 class Map:
@@ -75,71 +69,78 @@ class Map:
         """
         self.surface = None
         self.tiles = [[None for n in range(0,c.MAP_WIDTH)]for m in range(0,c.MAP_HEIGHT)]
-        self.set_up_tiles()
         self.biome_dict = {}
+
+    def setup_new_map(self):
+        self.set_up_tiles()
         self.set_up_biomes()
-        # self.make_boundary()
         self.make_fortresses()
+        self.make_boundary()
 
     def set_up_tiles(self):
         for i in range(0,c.MAP_WIDTH):
             for j in range(0,c.MAP_HEIGHT):
                 self.tiles[i][j] = Biome_tiles(i, j, pygame.rect.Rect(i*c.TILE_WIDTH, j*c.TILE_HEIGHT, c.TILE_WIDTH, c.TILE_HEIGHT))
                 # TODO:Impliment render distance
-        #DEBUG START
-        # i,j = 0,0
-        # for lst in self.tiles:
-        #     i += 1
-        #     j = 0
-        #     for tile in lst:
-        #         j+= 1
-        #         if isinstance(tile, None):
-        #             print(f"found NoneType at {i}, {j}")
-        #DEBUG END
 
 
     def set_up_biomes(self):
-        # TODO: this needs to use the other types of biomes
-        for group in ["red", "white", "blue", "green", "black","yellow"]:
-            self.biome_dict[group] = biomes.Biome((random.randint(0,c.MAP_WIDTH)*c.TILE_WIDTH, random.randint(0,c.MAP_HEIGHT)*c.TILE_HEIGHT), color=group)
+        for group in nation.nations_dict:
+            self.biome_dict[group] = biomes.Principality(group, (random.randint(0,c.MAP_WIDTH)*c.TILE_WIDTH, random.randint(0,c.MAP_HEIGHT)*c.TILE_HEIGHT), 
+                                                         color=group)
 
     def make_fortresses(self):
         for group in self.biome_dict:
             wall_list = self.biome_dict[group].make_wall(random.randint(c.TILE_WIDTH*4,c.TILE_WIDTH*10))
             for tup in wall_list[0]:
                 # changes color of wall tiles
+                self.tiles[tup[0]][tup[1]].biome_type = "wall"
                 self.tiles[tup[0]][tup[1]].color = "black"
             for tup in wall_list[1]:
                 #changes color of interior of wall tiles
+                self.tiles[tup[0]][tup[1]].biome_type = "owned"
                 self.tiles[tup[0]][tup[1]].color = self.biome_dict[group].color
                 self.biome_dict[group].add_tile(tup[0], tup[1])
 
 
 
-    def make_boundary():
+    def make_boundary(self):
         """ Make the map borders recommend using mountains to accomplish this
         """
-        pass
+        boarder = biomes.Mountain()
+        boarder.make_range((0,0), (c.MAP_WIDTH-1,0))
+        boarder.make_range((0,0), (0,c.MAP_HEIGHT-1))
+        boarder.make_range((0,c.MAP_HEIGHT-1), (c.MAP_WIDTH-1, c.MAP_HEIGHT-1))
+        boarder.make_range((c.MAP_WIDTH-1,0), (c.MAP_WIDTH-1, c.MAP_HEIGHT-1))
+        self.biome_dict["boarder_mountains"] = boarder
+        for tup in boarder.tile_height_list[-1]:
+            #drawing only the peaks for now
+            self.tiles[tup[0]][tup[1]].biome_type = "mountain_peak"
+            self.tiles[tup[0]][tup[1]].color = boarder.IMPASS_COLOR
 
-###########################################################################
     def load(self, save_dict):
         for biome_name in save_dict["biomes"]:
-            #TODO FINISH THIS
+            self.biome_dict[biome_name] = biomes.Biome()
+            self.biome_dict[biome_name].load(save_dict["biomes"][biome_name])    
             pass
+        self.tiles = []
+        index = 0
         for tile_collum in save_dict["tiles"]:
-            index = 0
             self.tiles.append([])
             for tile_dict in tile_collum:
-                self.tiles[index].append(Biome_tiles(0,0).load(tile_dict))
-                index += 1
-#########################################################################
+                self.tiles[index].append(Biome_tiles(0,0))
+                self.tiles[index][-1].load(tile_dict)
+            index += 1
+        self.get_surface()
+
+
     def get(self, variable):
         """
         """
         if variable == "biomes":
             temp_dict = {}
             for biome in self.biome_dict:
-                temp_dict[biome] = self.biome_dict[biome].get_save_data()
+                temp_dict[biome] = self.biome_dict[biome].get_save_data({})
             return temp_dict
         elif variable == "tiles":
             temp_list = []
@@ -151,7 +152,7 @@ class Map:
             return temp_list
         else:
             return eval(variable, globals(), self.__dict__)
-    
+        
 
     
     def get_surface(self)-> pygame.surface.Surface:

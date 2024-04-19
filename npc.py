@@ -1,5 +1,4 @@
 import pygame
-import json
 import constants as c
 import utilities
 
@@ -17,6 +16,9 @@ class AbstractNPC(pygame.sprite.Sprite):
     defence: int
     power: int
     class_type: str
+
+    
+    npc_save_list = []            # This will save the data for all of the npcs, update only as a large process, *takes time*
     
     def __init__(self, rect, *groups):
         super().__init__(*groups)
@@ -46,6 +48,9 @@ class AbstractNPC(pygame.sprite.Sprite):
     
     def save(self, save_dict) -> dict:
         # TODO: this save process needs to be standardized
+        # DEBUG START
+        print("abstractnpc save")
+        # DEBUG START
         for variable in save_dict:
             save_dict[variable] = self.get(variable)
         return save_dict
@@ -89,6 +94,16 @@ class AbstractNPC(pygame.sprite.Sprite):
         if (variable == "color"):
             return [self.color.r, self.color.g, self.color.b]
         return eval(variable, globals(), self.__dict__)
+    
+    def update(self, *args, **kwargs) -> None:
+        """
+        Intended as a flexible method, use letters or direct words to be able to call methods of all npcs with the Group.update() function
+        """
+        if args[0] == "save" or args[0] == "s":
+            self.npc_save_list.append(self.save(utilities.get_npc_data_dict))
+
+    def get_npc_save_list():
+        return AbstractNPC.npc_save_list
 
 
 class Combatant(AbstractNPC):
@@ -103,6 +118,11 @@ class Combatant(AbstractNPC):
     def load(self, save_dict):
         super().load(save_dict)
         #put extra loads here per class
+
+    def save(self, save_dict):
+        # Add any combatant specific variables here to the dictionary
+        return super().save(save_dict)
+
     
 
 class Civilian(AbstractNPC):
@@ -118,6 +138,11 @@ class Civilian(AbstractNPC):
     def load(self, save_dict):
         super().load(save_dict)
         #put extra loads here
+    
+
+    def save(self, save_dict):
+        # Add any combatant specific variables here to the dictionary
+        return super().save(save_dict)
     
 
 

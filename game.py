@@ -1,56 +1,51 @@
 import pygame
-import random
 import math
 import json
 import os
 
 
 import constants as c
-from constants import Identity
 import utilities
 import npc
 import map
 import player as plr
 
-os.chdir(c.PTWD)
+
 
 game_map: map.Map
+player: plr.Player
+window: pygame.surface.Surface
+clock: pygame.time.Clock
 
 pygame.init()
 
-window = pygame.display.set_mode((c.WIDTH, c.HEIGHT))
-clock = pygame.time.Clock()
-#TODO: move this so it only happens when not loading
-player = plr.Player(pygame.Rect(c.WIDTH/2 - c.PLAYER_WIDTH/2, c.HEIGHT/2 - c.PLAYER_HEIGHT/2, c.PLAYER_WIDTH, c.PLAYER_HEIGHT))
-ref_x, ref_y = 0,0
 
-pygame.display.set_caption("Coding Club Example Code")
     
 
-def draw(p_rect):
+def draw():
     """ Used to handle graphics to the screen. Drawn once per tick
     
     :param player (pygame.sprit.Sprite):
     """
     window.fill("red")
-    window.blit(game_map.get_surface(), (ref_x-c.MAP_WIDTH/2, ref_y-c.MAP_HEIGHT/2))
-    pygame.draw.rect(window, "blue", p_rect)    
+    window.blit(game_map.get_surface(), (player.ref_x-c.MAP_WIDTH/2, player.ref_y-c.MAP_HEIGHT/2))
+    pygame.draw.rect(window, "blue", player.rect)    
     pygame.display.update()
 
 
 def update_position(vel_x, vel_y):
     #TODO: handle this using the groups provided by pygame
-    global ref_x, ref_y
+    global player
     if player.rect.x + vel_x < c.WIDTH/10:
-        ref_x -= vel_x
+        player.ref_x -= vel_x
     elif player.rect.x + vel_x > c.WIDTH * 9/10:
-        ref_x -= vel_x
+        player.ref_x -= vel_x
     else:
         player.rect.x += vel_x
     if player.rect.y + vel_y < c.HEIGHT/10:
-        ref_y -= vel_y
+        player.ref_y -= vel_y
     elif player.rect.y + vel_y > c.HEIGHT * 9/10:
-        ref_y -= vel_y
+        player.ref_y -= vel_y
     else:
         player.rect.y += vel_y
 
@@ -62,42 +57,41 @@ def save():
     print("Saving Data:")
     utilities.save_to(utilities.get_player_data_dict, player.save, "player_save")
     utilities.save_to(utilities.get_map_data_dict, game_map.save, "map_save")
-    index = 0
-    for npc_obj in c.npc:
-        if isinstance(npc_obj, Identity):
-            continue
-        npc_file = open(f"saves/player_save{index}.json", "w")
-        npc_dict = utilities.get_npc_data_dict()
-        for variable in npc_dict:
-            npc_dict[variable] = npc_obj.get(variable)
-        json.dump(npc_dict, npc_file, indent=4)
-        npc_file.close()
+    c.npc.update("save", utilities.get_npc_data_dict)
+    # utilities.save_to({"npc_save": npc.AbstractNPC.npc_save_list}, utilities.bounce, "npc_save")
+    utilities.save_to(npc.AbstractNPC.get_npc_save_list, dict, "npc_save")
+
+
 
 def load_saves():
     print("Save Loaded")
-    global player_main, game_map
+    global player, game_map
     #make player object with the needed rect pass
-    player_main = plr.Player(None)
+
+    #TODO: put these in the util file to match the functionality of save
+    player = plr.Player(None)
     with open("saves/player_save.json", "r") as player_save:
-        player_main.load(json.load(player_save))
+        player.load(json.load(player_save))
         player_save.close()
     game_map = map.Map()
     with open("saves/map_save.json", "r") as map_save:
         game_map.load(json.load(map_save))
         map_save.close()
-    for file in os.listdir("saves"):
-        if file != "player_save.json" and file != "map_save.json" and not os.path.isfile(file):
-            with open(f"saves/{file}", "r") as npc_save:
-                #change this so the loaded npc is not always a Combatant
-                npc_obj = npc.Combatant(None)
-                npc_obj.load(json.load(npc_save))
-                c.npc.append(npc_obj)
-                npc_save.close()
+    # for file in os.listdir("saves"):
+    #     if file != "player_save.json" and file != "map_save.json" and not os.path.isfile(file):
+    #         with open(f"saves/{file}", "r") as npc_save:
+    #             #change this so the loaded npc is not always a Combatant
+    #             npc_obj = npc.Combatant(None)
+    #             npc_obj.load(json.load(npc_save))
+    #             c.npc.append(npc_obj)
+    #             npc_save.close()
 
 def new_save():
-    global game_map
+    global game_map, player
     print("Load New Save")
+    player = plr.Player(pygame.Rect(c.WIDTH/2 - c.PLAYER_WIDTH/2, c.HEIGHT/2 - c.PLAYER_HEIGHT/2, c.PLAYER_WIDTH, c.PLAYER_HEIGHT))
     game_map = map.Map()
+    game_map.setup_new_map()
 
 
 def check_for_save() -> bool :
@@ -107,7 +101,10 @@ def check_for_save() -> bool :
             return True
     return False
 
+
 def title_screen_loop():
+    global window
+
     title_font = pygame.font.SysFont("Garamond", 80)
     new_game_button_color = "gray"
     new_game_button_rect = pygame.rect.Rect(c.WIDTH/2 - c.BUTTON_WIDTH/2, c.HEIGHT/3 - c.BUTTON_HEIGHT/2, c.BUTTON_WIDTH, c.BUTTON_HEIGHT)
@@ -126,6 +123,9 @@ def title_screen_loop():
             if event.type == pygame.QUIT:
                 pygame.display.quit()
                 exit(0)
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_F11]:
+            window = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
         if is_save:
             if load_save_button_rect.collidepoint(*mouse_pos):
                 if pygame.mouse.get_pressed()[0]:
@@ -158,13 +158,17 @@ def main():
     """
     
     title_screen_loop() 
-    running = True   
+    running = True
     while running:
         #Sets the Max c.FPS for the game to run at
         clock.tick(c.FPS)
         
         keys = pygame.key.get_pressed()
+        events = pygame.event.get(eventtype=[pygame.QUIT, pygame.KEYUP])
         vel_x, vel_y = 0, 0
+
+
+
 
         # Checks which keys are pressed sets the movement accordingly
         if keys[pygame.K_a]:
@@ -180,19 +184,42 @@ def main():
         if math.sqrt(math.pow(vel_x, 2) + math.pow(vel_y, 2)) > c.MAX_VEL:
             vel_x, vel_y = vel_x/math.sqrt(2), vel_y/math.sqrt(2)
         update_position(vel_x, vel_y)
-        draw(player.rect)
+        draw()
 
-        # Exit the game, can be used later to handle other events
-        for event in pygame.event.get():
+
+        for event in events:
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_ESCAPE:
+                    pause = True
+                    print("pause")
+                    while pause:
+                        if pygame.event.get(pygame.QUIT):
+                            #TODO: add if player is loaded to prevent unnecisary saves (maybe never mind)
+                            save()
+                            pygame.quit()
+                            exit(0)
+                        #PAUSE MENU, WITH CLOSE FUNCTION
+                        for event in pygame.event.get(pygame.KEYUP):
+                            if event.key == pygame.K_ESCAPE:
+                                pause = False
+                    print("unpause")
             if event.type == pygame.QUIT:
-                #TODO: add if player is loaded to prevent unnecisary saves (maybe never mind)
                 save()
                 running = False
+
     pygame.quit()
 
 
 def startup():
     #check load formatting: TODO
+    global window, clock
+    c.setup()
+    os.chdir(c.PTWD)
+
+    window = pygame.display.set_mode((c.WIDTH, c.HEIGHT))
+    clock = pygame.time.Clock()
+
+    pygame.display.set_caption(c.NAME)
     print("Finish Startup")
     pass
 
