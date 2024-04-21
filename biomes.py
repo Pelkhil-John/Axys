@@ -28,18 +28,7 @@ class Biome:
         self.center = center
         self.biome_name = biome_name
         self.tile_list = []
-        self.owner_name = owner_name
-
-
-    def find_owner(self) -> str:
-        """
-        """
-        # TODO Testing
-        if isinstance(self.owner, pygame.sprite.Group):
-            for sprite in self.owner:
-                if isinstance(sprite, Identity):
-                    return sprite.group_name
-        return ""        
+        self.owner_name = owner_name    
     
 
     def get_save_data(self, save_dict) -> dict:
@@ -69,11 +58,11 @@ class Biome:
         
     def load(self, save_dict):
         #TODO finsih implimennting
-        self.owner_name = save_dict["owner_name"]
-        self.biome_name = save_dict["biome_name"]
-        self.center = tuple(save_dict["center"])
-        self.color = utilities.color_loader(save_dict["color"])
-        self.tile_list = save_dict["tile_list"]
+        self.owner_name     = save_dict["owner_name"]
+        self.biome_name     = save_dict["biome_name"]
+        self.center         = tuple(save_dict["center"])
+        self.color          = utilities.color_loader(save_dict["color"])
+        self.tile_list      = save_dict["tile_list"]
         
 class Mountain(Biome):
     """
@@ -112,8 +101,7 @@ class Mountain(Biome):
             return "TODO"
         return eval(globals(), self.__dict__)
 
-    def get_save_data(self) -> dict:
-        save_dict = {}
+    def get_save_data(self, save_dict) -> dict:
         save_dict["endpoints"] = self.get("endpoints")
         save_dict["tile_height_list"] = self.get("tile_height_list")
         return super().get_save_data(save_dict)
@@ -164,8 +152,7 @@ class Principality(Biome):
             return "TODO"
         return eval(globals(), self.__dict__)
 
-    def get_save_data(self) -> dict:
-        save_dict = {}
+    def get_save_data(self, save_dict) -> dict:
         save_dict["wall_list"] = self.get("wall_list")
         save_dict["wall_radius"] = self.get("wall_radius")
         return super().get_save_data(save_dict)

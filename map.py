@@ -20,16 +20,20 @@ class Biome_tiles():
     color: pygame.color.Color
     name: str
     biome_type: str
+    drawn: bool
+    walkable: bool
+    #TODO change this to a tuple please!
     index_i:int 
     index_j:int
 
     def __init__(self, index_i, index_j, rect=None, color="dark green", name=None, biome_type="plain") -> None:
         self.rect = rect
         #TODO: make this based off of the biome type
-        # self.color = pygame.color.Color(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         self.color = color
         self.name = name
         self.biome_type = biome_type
+        self.drawn = False
+        self.walkable = True
         self.index_i = index_i
         self.index_j = index_j
     
@@ -62,6 +66,7 @@ class Map:
     """
     biome_dict: dict
     tiles: list
+    drawn: bool
     surface: pygame.surface.Surface
 
     def __init__(self) -> None:
@@ -70,6 +75,7 @@ class Map:
         self.surface = None
         self.tiles = [[None for n in range(0,c.MAP_WIDTH)]for m in range(0,c.MAP_HEIGHT)]
         self.biome_dict = {}
+        self.drawn = False
 
     def setup_new_map(self):
         self.set_up_tiles()
@@ -117,6 +123,7 @@ class Map:
             #drawing only the peaks for now
             self.tiles[tup[0]][tup[1]].biome_type = "mountain_peak"
             self.tiles[tup[0]][tup[1]].color = boarder.IMPASS_COLOR
+            self.tiles[tup[0]][tup[1]].walkable = False
 
     def load(self, save_dict):
         for biome_name in save_dict["biomes"]:
@@ -163,6 +170,15 @@ class Map:
             for k in range(0, c.MAP_WIDTH):
                 for l in range(0,c.MAP_HEIGHT):
                     pygame.draw.rect(self.surface, self.tiles[k][l].color, self.tiles[k][l].rect)
+                    self.tiles[k][l].drawn = True
+        elif not self.drawn:
+            #TODO find a way to do this without looping through all of the lists, maybe storing a reference to the tile that needs to be drawn
+            for k in range(0, c.MAP_WIDTH):
+                for l in range(0,c.MAP_HEIGHT):
+                    if not self.tiles[k][l].drawn:
+                        pygame.draw.rect(self.surface, self.tiles[k][l].color, self.tiles[k][l].rect)
+                        self.tiles[k][l].drawn = True
+        self.drawn = True
         return self.surface
     
     def save(self, save_dict:dict) -> dict:

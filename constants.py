@@ -21,9 +21,9 @@ NAME = "Axys"
 PTWD = "/"
 WIDTH, HEIGHT = 1000,1000
 BUTTON_WIDTH, BUTTON_HEIGHT = WIDTH/5, HEIGHT/10
-PLAYER_WIDTH, PLAYER_HEIGHT = 20, 40
+PLAYER_WIDTH, PLAYER_HEIGHT = 20, 20
 NPC_WIDTH, NPC_HEIGHT = 20, 40
-MAP_WIDTH, MAP_HEIGHT = 100, 100
+MAP_WIDTH, MAP_HEIGHT = 200, 200
 TILE_WIDTH, TILE_HEIGHT = 10, 10
 MAX_VEL = 5
 FPS = 60
@@ -38,8 +38,8 @@ def get(variable):
 
 
 def find_proper_wd(file_name):
+    #FIXME THIS AINT WORKIN
     for file in os.listdir(file_name):
-        print(file)
         if file == NAME:
             return os.path.join(file_name, file)
         if os.path.isdir(file):
@@ -49,6 +49,8 @@ def find_proper_wd(file_name):
 def setup():
     global PTWD
     #setting up constants
-    PTWD = find_proper_wd(os.path.dirname(os.getcwd()))
-
+    if os.path.dirname(os.getcwd()) != NAME:
+        PTWD = find_proper_wd(os.path.dirname(os.getcwd()))
+    if "saves" not in os.listdir():
+        os.mkdir("saves")
     pass

@@ -49,6 +49,7 @@ def get_npc_data_dict():
 def get_player_data_dict():
     return {
         "rect": None,
+        "map_rect": None,
         "color": None,
         "on_screen": False,
         "health": 0,

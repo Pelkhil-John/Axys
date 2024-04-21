@@ -64,7 +64,7 @@ class AbstractNPC(pygame.sprite.Sprite):
 
     # check if the edges of the rectangle representing this NPC is on the screen, stored in a bool for all NPCs
     def check_on_screen(self):
-        
+        #TODO: THIS NEEDS TO TAKE INTO ACCOUNT THE REF POSITION OF THE MAP
         self.on_screen = not(self.rect.right < 0 
                              or self.rect.left > c.WIDTH 
                              or self.rect.bottom < 0 
@@ -72,9 +72,8 @@ class AbstractNPC(pygame.sprite.Sprite):
         
     def load(self, save_dict):
         """
-        
-        TODO: add tryblocks to prevent save corruption
         """
+        #TODO: add tryblocks to prevent save corruption
         self.rect = utilities.rect_loader(save_dict["rect"])
         self.color = utilities.color_loader(save_dict["color"])
         self.on_screen = save_dict["on_screen"]

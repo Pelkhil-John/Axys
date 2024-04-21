@@ -7,20 +7,21 @@ import os
 import constants as c
 import utilities
 import npc
-import map
+import map as mp
 import player as plr
 
 
-
-game_map: map.Map
+map: mp.Map
 player: plr.Player
 window: pygame.surface.Surface
 clock: pygame.time.Clock
 
+#DEBUG
+last_indexs = [(0,0)]
+#DEBUG
+
 pygame.init()
 
-
-    
 
 def draw():
     """ Used to handle graphics to the screen. Drawn once per tick
@@ -28,16 +29,19 @@ def draw():
     :param player (pygame.sprit.Sprite):
     """
     window.fill("red")
-    window.blit(game_map.get_surface(), (player.ref_x-c.MAP_WIDTH/2, player.ref_y-c.MAP_HEIGHT/2))
+    window.blit(map.get_surface(), (player.ref_x-(c.MAP_WIDTH*c.TILE_WIDTH- c.WIDTH)/2, player.ref_y-(c.MAP_HEIGHT*c.TILE_HEIGHT-c.HEIGHT)/2))
     pygame.draw.rect(window, "blue", player.rect)    
     pygame.display.update()
 
 
-def update_position(vel_x, vel_y):
+def update_position():
     #TODO: handle this using the groups provided by pygame
     global player
+    player.map_rect.x += vel_x
+    player.map_rect.y += vel_y
     if player.rect.x + vel_x < c.WIDTH/10:
         player.ref_x -= vel_x
+        
     elif player.rect.x + vel_x > c.WIDTH * 9/10:
         player.ref_x -= vel_x
     else:
@@ -49,6 +53,7 @@ def update_position(vel_x, vel_y):
     else:
         player.rect.y += vel_y
 
+
 def save():
     """ save the current game data
 
@@ -56,16 +61,15 @@ def save():
     """
     print("Saving Data:")
     utilities.save_to(utilities.get_player_data_dict, player.save, "player_save")
-    utilities.save_to(utilities.get_map_data_dict, game_map.save, "map_save")
+    utilities.save_to(utilities.get_map_data_dict, map.save, "map_save")
     c.npc.update("save", utilities.get_npc_data_dict)
     # utilities.save_to({"npc_save": npc.AbstractNPC.npc_save_list}, utilities.bounce, "npc_save")
     utilities.save_to(npc.AbstractNPC.get_npc_save_list, dict, "npc_save")
 
 
-
 def load_saves():
     print("Save Loaded")
-    global player, game_map
+    global player, map
     #make player object with the needed rect pass
 
     #TODO: put these in the util file to match the functionality of save
@@ -73,9 +77,9 @@ def load_saves():
     with open("saves/player_save.json", "r") as player_save:
         player.load(json.load(player_save))
         player_save.close()
-    game_map = map.Map()
+    map = mp.Map()
     with open("saves/map_save.json", "r") as map_save:
-        game_map.load(json.load(map_save))
+        map.load(json.load(map_save))
         map_save.close()
     # for file in os.listdir("saves"):
     #     if file != "player_save.json" and file != "map_save.json" and not os.path.isfile(file):
@@ -86,12 +90,13 @@ def load_saves():
     #             c.npc.append(npc_obj)
     #             npc_save.close()
 
+
 def new_save():
-    global game_map, player
+    global map, player
     print("Load New Save")
     player = plr.Player(pygame.Rect(c.WIDTH/2 - c.PLAYER_WIDTH/2, c.HEIGHT/2 - c.PLAYER_HEIGHT/2, c.PLAYER_WIDTH, c.PLAYER_HEIGHT))
-    game_map = map.Map()
-    game_map.setup_new_map()
+    map = mp.Map()
+    map.setup_new_map()
 
 
 def check_for_save() -> bool :
@@ -125,6 +130,7 @@ def title_screen_loop():
                 exit(0)
         keys = pygame.key.get_pressed()
         if keys[pygame.K_F11]:
+            #TODO: change the constants in constants.py to match this change
             window = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
         if is_save:
             if load_save_button_rect.collidepoint(*mouse_pos):
@@ -150,13 +156,104 @@ def title_screen_loop():
         pygame.display.update()
     
 
+def pause_screen_loop():
+    """ 
+    """
+    #TODO: docstring
+
+    pause_background_rect = pygame.rect.Rect(c.WIDTH/6, 0, c.WIDTH/3*2, c.HEIGHT)
+    title_font = pygame.font.SysFont("Garamond", 80)
+    pause_title = utilities.get_text_surface("Pause", title_font)
+    pause_title_location = (c.WIDTH/2 - 100, c.HEIGHT/10)
+    
+    new_game_button_rect = pygame.rect.Rect(c.WIDTH/2 - c.BUTTON_WIDTH/2, c.HEIGHT/4 - c.BUTTON_HEIGHT/2, c.BUTTON_WIDTH, c.BUTTON_HEIGHT)
+    new_game_button_text = utilities.get_text_surface("New Game")
+    load_save_button_rect = pygame.rect.Rect(c.WIDTH/2 - c.BUTTON_WIDTH/2, c.HEIGHT/4*2 - c.BUTTON_HEIGHT/2, c.BUTTON_WIDTH, c.BUTTON_HEIGHT)
+    load_save_button_text = utilities.get_text_surface("Load Save")
+    exit_button_rect = pygame.rect.Rect(c.WIDTH/2 - c.BUTTON_WIDTH/2, c.HEIGHT/4*3 - c.BUTTON_HEIGHT/2, c.BUTTON_WIDTH, c.BUTTON_HEIGHT)
+    exit_button_text = utilities.get_text_surface("Exit/Save")
+
+    paused = True
+    while paused:
+        # keys = pygame.key.get_pressed()
+        events = pygame.event.get()
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pressed = pygame.mouse.get_pressed()
+
+        new_game_button_color = "gray"
+        load_save_button_color = "grey"
+        exit_button_color = "grey"
+
+        if new_game_button_rect.collidepoint(mouse_pos):
+            if mouse_pressed[0]:
+                new_save()
+                return
+            new_game_button_color = "grey25"
+        elif load_save_button_rect.collidepoint(mouse_pos):
+            if mouse_pressed[0]:
+                load_saves()
+                return
+            load_save_button_color = "grey25"
+        elif exit_button_rect.collidepoint(mouse_pos):
+            if mouse_pressed[0]:
+                save()
+                pygame.quit()
+                exit(0)
+            exit_button_color = "grey25"
+
+        for event in events:
+            if event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE:
+                return
+            if event.type == pygame.QUIT:
+                save()
+                pygame.quit()
+                exit(0)             #Really shouldn't be handled this way
+
+        pygame.draw.rect(window, (0,0,0,200), pause_background_rect, border_radius=5)
+        window.blit(pause_title, pause_title_location)
+        pygame.draw.rect(window, new_game_button_color, new_game_button_rect, border_radius=10)
+        window.blit(new_game_button_text, (new_game_button_rect.x + 10, new_game_button_rect.y + 10))
+        pygame.draw.rect(window, load_save_button_color, load_save_button_rect, border_radius=10)
+        window.blit(load_save_button_text, (load_save_button_rect.x + 10, load_save_button_rect.y + 10))
+        pygame.draw.rect(window, exit_button_color, exit_button_rect, border_radius=10)
+        window.blit(exit_button_text, (exit_button_rect.x + 10, exit_button_rect.y + 10))
+        pygame.display.update()
+
+
+def check_map_tile_collision():
+    global last_indexs, vel_x, vel_y
+    local_index = player.get_location_index(vel_x,vel_y)
+    player.map_rect.x += vel_x
+    player.map_rect.y += vel_y
+    for i in range(max(0, local_index[0]-5), min(c.MAP_WIDTH, local_index[0]+6)):
+        for j in range(max(0, local_index[1]-5), min(c.MAP_HEIGHT, local_index[1]+6)):
+            tile = map.tiles[i][j]
+            if player.map_rect.colliderect(tile.rect):
+                #DEBUG
+                # tile.color = "grey"
+                # tile.drawn = False
+                # map.drawn = False
+                # #DEBUG
+                #TODO: find a way to do this by only setting the necissary value to zero
+                if not tile.walkable:
+                    player.map_rect.x -= vel_x
+                    player.map_rect.y -= vel_y 
+                    vel_x, vel_y = 0, 0
+    player.map_rect.x -= vel_x
+    player.map_rect.y -= vel_y 
+    #DEBUG
+    # map.get_surface()
+    #DEBUG
+
 
 def main():
     """ main function, 
     this is where we control things and call all of the stuff we want to happen in the game
     
     """
-    
+    global vel_x, vel_y
+
+
     title_screen_loop() 
     running = True
     while running:
@@ -182,29 +279,31 @@ def main():
         
         # Normalize the speed so the player doesn't move faster when going diagonal
         if math.sqrt(math.pow(vel_x, 2) + math.pow(vel_y, 2)) > c.MAX_VEL:
-            vel_x, vel_y = vel_x/math.sqrt(2), vel_y/math.sqrt(2)
-        update_position(vel_x, vel_y)
+            vel_x, vel_y = int(vel_x/math.sqrt(2)), int(vel_y/math.sqrt(2))
+
+        check_map_tile_collision()
+
+        update_position()
         draw()
 
 
         for event in events:
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_ESCAPE:
-                    pause = True
                     print("pause")
-                    while pause:
-                        if pygame.event.get(pygame.QUIT):
-                            #TODO: add if player is loaded to prevent unnecisary saves (maybe never mind)
-                            save()
-                            pygame.quit()
-                            exit(0)
-                        #PAUSE MENU, WITH CLOSE FUNCTION
-                        for event in pygame.event.get(pygame.KEYUP):
-                            if event.key == pygame.K_ESCAPE:
-                                pause = False
+                    pause_screen_loop()
+                    # while pause:
+                    #     if pygame.event.get(pygame.QUIT):
+                    #         #TODO: add if player is loaded to prevent unnecisary saves (maybe never mind)
+                    #         save()
+                    #         pygame.quit()
+                    #         exit(0)
+                    #     #PAUSE MENU, WITH CLOSE FUNCTION
+                    #     for event in pygame.event.get(pygame.KEYUP):
+                    #         if event.key == pygame.K_ESCAPE:
+                    #             pause = False
                     print("unpause")
             if event.type == pygame.QUIT:
-                save()
                 running = False
 
     pygame.quit()
