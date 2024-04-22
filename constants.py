@@ -5,7 +5,6 @@ class Identity(pygame.sprite.Sprite):
     """ This Sprite should belong to ONE group and one group only 
 
     Purpose is to store the data for the group as accessable from any member of the group
-    TODO: Docstring
     """
 
     group_name: str
@@ -16,7 +15,6 @@ class Identity(pygame.sprite.Sprite):
 
 
 #Actual Consatants
-#TODO: Consider auto populating this to allow for saves between plays
 NAME = "Axys"
 PTWD = "/"
 WIDTH, HEIGHT = 1000,1000
@@ -45,6 +43,10 @@ def find_proper_wd(file_name):
         if os.path.isdir(file):
             os.path.join(file_name, find_proper_wd(file))    
     return ""
+
+def update_size(window_size: tuple):
+    global WIDTH, HEIGHT
+    WIDTH, HEIGHT = window_size
 
 def setup():
     global PTWD

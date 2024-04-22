@@ -43,6 +43,7 @@ class Biome_tiles():
         self.rect = utilities.rect_loader(save_dict["rect"])
         self.color = utilities.color_loader(save_dict["color"])
         self.name = save_dict["name"]
+        self.walkable = save_dict["walkable"]
         self.biome_type = save_dict["biome_type"]
 
     def get_save_data(self) -> dict:
@@ -53,6 +54,7 @@ class Biome_tiles():
             "color": utilities.color_to_list(self.color),
             "name": self.name,
             "biome_type": self.biome_type,
+            "walkable": self.walkable
         }
 
 
@@ -120,10 +122,22 @@ class Map:
         boarder.make_range((c.MAP_WIDTH-1,0), (c.MAP_WIDTH-1, c.MAP_HEIGHT-1))
         self.biome_dict["boarder_mountains"] = boarder
         for tup in boarder.tile_height_list[-1]:
-            #drawing only the peaks for now
             self.tiles[tup[0]][tup[1]].biome_type = "mountain_peak"
             self.tiles[tup[0]][tup[1]].color = boarder.IMPASS_COLOR
             self.tiles[tup[0]][tup[1]].walkable = False
+        for tup in boarder.tile_height_list[3]:
+            self.tiles[tup[0]][tup[1]].biome_type = "mountain"
+            self.tiles[tup[0]][tup[1]].color = "grey50"
+            self.tiles[tup[0]][tup[1]].walkable = False
+        for tup in boarder.tile_height_list[2]:
+            self.tiles[tup[0]][tup[1]].biome_type = "hill"
+            self.tiles[tup[0]][tup[1]].color = "grey80"
+        for tup in boarder.tile_height_list[1]:
+            self.tiles[tup[0]][tup[1]].biome_type = "foot_hill"
+            self.tiles[tup[0]][tup[1]].color = "grey100"
+        for tup in boarder.tile_height_list[0]:
+            self.tiles[tup[0]][tup[1]].biome_type = "foot_hill"
+            self.tiles[tup[0]][tup[1]].color = "green"
 
     def load(self, save_dict):
         for biome_name in save_dict["biomes"]:

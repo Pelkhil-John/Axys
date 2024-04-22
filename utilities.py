@@ -104,3 +104,8 @@ def rect_to_list(rect):
     if isinstance(rect, pygame.rect.Rect):
         return [rect.left, rect.top, rect.w, rect.h]
     return [0,0,0,0]
+
+def get_alpha_rect_surface(rect: pygame.rect.Rect, color, radius = -1) -> pygame.Surface:
+    surface = pygame.Surface(rect.size, pygame.SRCALPHA)
+    pygame.draw.rect(surface, color, surface.get_rect(), border_radius=radius)
+    return surface
