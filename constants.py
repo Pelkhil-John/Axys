@@ -20,7 +20,7 @@ PTWD = "/"
 WIDTH, HEIGHT = 1000,1000
 BUTTON_WIDTH, BUTTON_HEIGHT = WIDTH/5, HEIGHT/10
 PLAYER_WIDTH, PLAYER_HEIGHT = 20, 20
-NPC_WIDTH, NPC_HEIGHT = 20, 40
+NPC_WIDTH, NPC_HEIGHT = 10, 10
 MAP_WIDTH, MAP_HEIGHT = 200, 200
 TILE_WIDTH, TILE_HEIGHT = 10, 10
 MAX_VEL = 5
@@ -42,7 +42,7 @@ def find_proper_wd(file_name):
             return os.path.join(file_name, file)
         if os.path.isdir(file):
             os.path.join(file_name, find_proper_wd(file))    
-    return ""
+    return "/"
 
 def update_size(window_size: tuple):
     global WIDTH, HEIGHT

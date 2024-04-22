@@ -8,10 +8,8 @@ import utilities
 import nation
 
 
-
 class Biome:
     """
-    
     """
 
     drawn = False

@@ -11,7 +11,6 @@ import nation
 #TODO: Biome coloring and non npc related Biomes
 
 
-
 class Biome_tiles():
     """ This class stores all of the different biome and land control data from all of the different groups.
     """
@@ -58,8 +57,6 @@ class Biome_tiles():
         }
 
 
-
-
 class Map:
     """ This class stores all of the different biome and land control data from all of the different groups.
 
@@ -91,7 +88,6 @@ class Map:
                 self.tiles[i][j] = Biome_tiles(i, j, pygame.rect.Rect(i*c.TILE_WIDTH, j*c.TILE_HEIGHT, c.TILE_WIDTH, c.TILE_HEIGHT))
                 # TODO:Impliment render distance
 
-
     def set_up_biomes(self):
         for group in nation.nations_dict:
             self.biome_dict[group] = biomes.Principality(group, (random.randint(0,c.MAP_WIDTH)*c.TILE_WIDTH, random.randint(0,c.MAP_HEIGHT)*c.TILE_HEIGHT), 
@@ -109,8 +105,6 @@ class Map:
                 self.tiles[tup[0]][tup[1]].biome_type = "owned"
                 self.tiles[tup[0]][tup[1]].color = self.biome_dict[group].color
                 self.biome_dict[group].add_tile(tup[0], tup[1])
-
-
 
     def make_boundary(self):
         """ Make the map borders recommend using mountains to accomplish this
@@ -154,7 +148,6 @@ class Map:
             index += 1
         self.get_surface()
 
-
     def get(self, variable):
         """
         """
@@ -173,8 +166,6 @@ class Map:
             return temp_list
         else:
             return eval(variable, globals(), self.__dict__)
-        
-
     
     def get_surface(self)-> pygame.surface.Surface:
         """TODO: docstring
@@ -201,6 +192,3 @@ class Map:
         for variable in save_dict:
             save_dict[variable] = self.get(variable)
         return save_dict
-        
-
-    

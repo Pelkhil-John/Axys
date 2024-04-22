@@ -1,5 +1,6 @@
 import json
 import pygame
+import turret
 
 def encode(obj):
     if isinstance(obj, pygame.color.Color):
@@ -39,14 +40,22 @@ def main():
     dudeham.trial()
     print(json.dumps(dudeham.__dict__, default=encode))
 
+    turt = turret.Gunner((500,500))
+    turt.make_surface()
+
     pygame.init()
     clock = pygame.time.Clock()
-    window = pygame.display.set_mode((100,100))
+    window = pygame.display.set_mode((1000,1000))
     window.fill("black")
     pygame.display.update()
 
     while True:
         clock.tick(5)
+        window.fill("black")
+        turt.rotate(-5)
+        surf = turt.get_surface()
+        window.blit(surf, (50,50))
+        pygame.display.update()
 
         if pygame.event.get(pygame.QUIT):
             pygame.quit()
