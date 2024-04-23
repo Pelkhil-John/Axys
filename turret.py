@@ -7,9 +7,9 @@ class AbstractTurret():
     modules: list
     location: tuple
     surface: pygame.surface.Surface
-    projectile: p.Projectile 
+    projectile: p.AbstractProjectile 
 
-    def __init__(self, location:tuple, surface: pygame.surface.Surface=None, projectile:p.Projectile=None):
+    def __init__(self, location:tuple, surface: pygame.surface.Surface=None, projectile:p.AbstractProjectile=None):
         self.modules = []
         self.location = location
         self.surface = surface
@@ -39,7 +39,7 @@ class Gunner(AbstractTurret):
     turned_head_rect: pygame.rect.Rect
     
 
-    def __init__(self, location: tuple, color="green", surface: pygame.Surface = None, projectile: p.Projectile = None):
+    def __init__(self, location: tuple, color="green", surface: pygame.Surface = None, projectile: p.AbstractProjectile = None):
         self.color = pygame.color.Color(color)
         self.facing = 0.0
         self.turned_head = pygame.surface.Surface((4* c.TILE_WIDTH, 4* c.TILE_HEIGHT))

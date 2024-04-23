@@ -1,6 +1,7 @@
 import json
 import pygame
 import turret
+import projectile
 
 def encode(obj):
     if isinstance(obj, pygame.color.Color):
@@ -43,6 +44,9 @@ def main():
     turt = turret.Gunner((500,500))
     turt.make_surface()
 
+    bul = projectile.Bullet(location=(0,0), size=(50,50))
+    bul.location = (500, 50)
+
     pygame.init()
     clock = pygame.time.Clock()
     window = pygame.display.set_mode((1000,1000))
@@ -52,9 +56,11 @@ def main():
     while True:
         clock.tick(5)
         window.fill("black")
-        turt.rotate(-5)
+        turt.rotate(5)
+        # bul.rotate(5)
         surf = turt.get_surface()
         window.blit(surf, (50,50))
+        # window.blit(bul.surf, (500,50))
         pygame.display.update()
 
         if pygame.event.get(pygame.QUIT):
