@@ -41,26 +41,26 @@ def main():
     dudeham.trial()
     print(json.dumps(dudeham.__dict__, default=encode))
 
-    turt = turret.Gunner((500,500))
-    turt.make_surface()
+    bul = projectile.Bullet((490,490))
 
-    bul = projectile.Bullet(location=(0,0), size=(50,50))
-    bul.location = (500, 50)
+    turt = turret.Gunner((500,500), color="cyan", projectile=bul)
 
     pygame.init()
     clock = pygame.time.Clock()
-    window = pygame.display.set_mode((1000,1000))
+    window = pygame.display.set_mode((1000,1000), pygame.SRCALPHA)
     window.fill("black")
     pygame.display.update()
 
     while True:
-        clock.tick(5)
-        window.fill("black")
-        turt.rotate(5)
-        # bul.rotate(5)
-        surf = turt.get_surface()
-        window.blit(surf, (50,50))
-        # window.blit(bul.surf, (500,50))
+        clock.tick(60)
+        turt.tick()
+        window.fill("grey")
+        turt.rotate(1)
+        turt.fire()
+        
+        for bullet in turt.get_projectile_list():
+            window.blit(bullet[0], bullet[1])
+        window.blit(turt.surf, turt.location)
         pygame.display.update()
 
         if pygame.event.get(pygame.QUIT):
@@ -68,9 +68,6 @@ def main():
             exit(0)
 
         keys = pygame.key.get_pressed()
-
-        if keys[pygame.K_a]:
-            print("pressed a")
 
         if keys[pygame.K_b]:
             print("game pause")

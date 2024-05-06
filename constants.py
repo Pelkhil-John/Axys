@@ -22,7 +22,7 @@ BUTTON_WIDTH, BUTTON_HEIGHT = WIDTH/5, HEIGHT/10
 PLAYER_WIDTH, PLAYER_HEIGHT = 20, 20
 NPC_WIDTH, NPC_HEIGHT = 10, 10
 MAP_WIDTH, MAP_HEIGHT = 200, 200
-TILE_WIDTH, TILE_HEIGHT = 100, 100
+TILE_WIDTH, TILE_HEIGHT = 10, 10
 MAX_VEL = 5
 FPS = 60
 
@@ -37,12 +37,13 @@ def get(variable):
 
 def find_proper_wd(file_name):
     #FIXME THIS AINT WORKIN
+    path = ""
     for file in os.listdir(file_name):
         if file == NAME:
             return os.path.join(file_name, file)
-        if os.path.isdir(file):
-            os.path.join(file_name, find_proper_wd(file))    
-    return "/"
+        if path == "" and os.path.isdir(os.path.join(file_name, file)):
+            path = find_proper_wd(os.path.join(file_name, file))
+    return path
 
 def update_size(window_size: tuple):
     global WIDTH, HEIGHT
@@ -53,6 +54,8 @@ def setup():
     #setting up constants
     if os.path.dirname(os.getcwd()) != NAME:
         PTWD = find_proper_wd(os.path.dirname(os.getcwd()))
+        # PTWD = find_proper_wd(os.getcwd())
+
     if "saves" not in os.listdir():
         os.mkdir("saves")
     pass

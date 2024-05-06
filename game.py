@@ -6,6 +6,8 @@ import os
 import constants as c
 import utilities
 import npc
+import biomes
+import turret
 import map as mp
 import player as plr
 
@@ -13,6 +15,11 @@ map: mp.Map
 player: plr.Player
 window: pygame.surface.Surface
 clock: pygame.time.Clock
+turrets: list[turret.AbstractTurret]
+
+#TEMP
+turrets = []
+#TEMP
 
 pygame.init()
 
@@ -22,7 +29,10 @@ def draw():
     
     """
     window.fill("black")
+    #TODO: for the love of god pleae find a better more useful coordinate system
     window.blit(map.get_surface(), (player.ref_x-(c.MAP_WIDTH*c.TILE_WIDTH- c.WIDTH)/2, player.ref_y-(c.MAP_HEIGHT*c.TILE_HEIGHT-c.HEIGHT)/2))
+    for turret in turrets:
+        window.blit(turret.surf, (player.ref_x-((c.MAP_WIDTH*c.TILE_WIDTH- c.WIDTH)/2 - turret.location[0]), player.ref_y-((c.MAP_HEIGHT*c.TILE_HEIGHT-c.HEIGHT)/2 - turret.location[1])))
     pygame.draw.rect(window, "blue", player.rect)    
     pygame.display.update()
 
@@ -32,6 +42,11 @@ def update_position():
     global player
     player.map_rect.x += vel_x
     player.map_rect.y += vel_y
+
+    #DEBUG
+    # for turret in turrets:
+    #     turret.rotate(1)
+    # DEBUG
     if player.rect.x + vel_x < c.WIDTH/10:
         player.ref_x -= vel_x
         
@@ -45,6 +60,7 @@ def update_position():
         player.ref_y -= vel_y
     else:
         player.rect.y += vel_y
+    
 
 
 def save():
@@ -85,11 +101,14 @@ def load_saves():
 
 
 def new_save():
-    global map, player
+    global map, player, turrets
     print("Load New Save")
     player = plr.Player(pygame.Rect(c.WIDTH/2 - c.PLAYER_WIDTH/2, c.HEIGHT/2 - c.PLAYER_HEIGHT/2, c.PLAYER_WIDTH, c.PLAYER_HEIGHT))
     map = mp.Map()
     map.setup_new_map()
+    for value in map.biome_dict:
+        if isinstance(map.biome_dict[value], biomes.Principality):
+            turrets.append(turret.Gunner((map.biome_dict[value].center[0], map.biome_dict[value].center[1]), color=map.biome_dict[value].color))
 
 
 def check_for_save() -> bool :
@@ -261,9 +280,11 @@ def main():
     while running:
         #Sets the Max c.FPS for the game to run at
         clock.tick(c.FPS)
-        
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pressed = pygame.mouse.get_pressed()
         keys = pygame.key.get_pressed()
         events = pygame.event.get(eventtype=[pygame.QUIT, pygame.KEYUP])
+
         vel_x, vel_y = 0, 0
 
         # Checks which keys are pressed sets the movement accordingly
@@ -275,6 +296,9 @@ def main():
             vel_y += c.MAX_VEL
         if keys[pygame.K_w]:
             vel_y -= c.MAX_VEL
+        if mouse_pressed[0]:
+            for tur in turrets:
+                tur.rotate_to(utilities.get_direction(player.rect.center, mouse_pos))
         
         # Normalize the speed so the player doesn't move faster when going diagonal
         if math.sqrt(math.pow(vel_x, 2) + math.pow(vel_y, 2)) > c.MAX_VEL:
@@ -300,7 +324,7 @@ def startup():
     c.setup()
     os.chdir(c.PTWD)
 
-    window = pygame.display.set_mode((c.WIDTH, c.HEIGHT))
+    window = pygame.display.set_mode((c.WIDTH, c.HEIGHT), pygame.SRCALPHA)
     clock = pygame.time.Clock()
 
     pygame.display.set_caption(c.NAME)

@@ -157,8 +157,11 @@ class Principality(Biome):
     """
     """
 
+    WALL_COLOR = "grey25"
+
     wall_list: list
     wall_radius: int
+    resource_dict: dict
 
     def __init__(self, owner_name:str, center=None, color="grey", biome_name=""):
         nation.nations_dict[owner_name].owned_biomes.append(self)
@@ -173,6 +176,7 @@ class Principality(Biome):
 
         :param radius: int
         """
+        #TODO: make these NOT go off the map
         self.wall_list = [[],[]]
         for i in range(0,c.MAP_WIDTH):
             for j in range(0,c.MAP_HEIGHT):

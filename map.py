@@ -99,7 +99,8 @@ class Map:
             for tup in wall_list[0]:
                 # changes color of wall tiles
                 self.tiles[tup[0]][tup[1]].biome_type = "wall"
-                self.tiles[tup[0]][tup[1]].color = "black"
+                self.tiles[tup[0]][tup[1]].color = biomes.Principality.WALL_COLOR
+                self.tiles[tup[0]][tup[1]].walkable = False
             for tup in wall_list[1]:
                 #changes color of interior of wall tiles
                 self.tiles[tup[0]][tup[1]].biome_type = "owned"

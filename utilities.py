@@ -1,17 +1,16 @@
+import math
 import pygame.font
 import pygame.color
 import pygame.rect
 import json
 from constants import Identity
 
-WHITE = (255,255,255)
-
 pygame.font.init()
 
 my_font = pygame.font.SysFont("Times New Roman", 30)
 
 
-def get_text_surface(text, font=my_font, color=WHITE):
+def get_text_surface(text, font=my_font, color="white"):
     """ used to get the text surface to display on the screen
         you will need to then call blit on the surface to display it using a location in the form of a tuple like this:
 
@@ -27,7 +26,7 @@ def get_text_surface(text, font=my_font, color=WHITE):
         return font.render(text, False, color)
     except:
         print(f'Font Error: fix yo fonts. Trying to print: {text}')
-        return font.render('Font Error', False, WHITE)
+        return font.render('Font Error', False, "white")
     
 def normalize(list, max):
     #TODO: this stuff
@@ -109,3 +108,15 @@ def get_alpha_rect_surface(rect: pygame.rect.Rect, color, radius = -1) -> pygame
     surface = pygame.Surface(rect.size, pygame.SRCALPHA)
     pygame.draw.rect(surface, color, surface.get_rect(), border_radius=radius)
     return surface
+
+def get_direction(center:tuple, target:tuple) -> int:
+    if target[0] - center[0] == 0:
+        target = (target[0] + 1, target[1]) 
+    if target[0] - center[0] > 0:
+        angle = math.degrees(math.atan((center[1]-target[1])/(target[0]-center[0])))
+    else: 
+        angle = 180 + math.degrees(math.atan((target[1]-center[1])/(center[0]-target[0])))
+    return int(angle % 360)
+
+def get_distance(center:tuple, target:tuple):
+    return math.sqrt((center[0]-target[0])**2 + (center[1]-target[1])**2)
